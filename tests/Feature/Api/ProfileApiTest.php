@@ -27,7 +27,7 @@ class ProfileApiTest extends TestCase
 
     public function test_profile_update_can_change_name_and_email(): void
     {
-        $subscriber = User::query()->where('email', 'subscriber@communitywill.test')->firstOrFail();
+        $subscriber = User::query()->where('email', 'subscriber@gmail.com')->firstOrFail();
 
         Sanctum::actingAs($subscriber, [], 'api');
 

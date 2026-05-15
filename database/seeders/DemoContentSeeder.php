@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Enums\AdvertisementStatus;
 use App\Enums\ArchivePurchaseStatus;
 use App\Enums\NewsPostStatus;
+use App\Enums\RoleSlug;
 use App\Models\Advertisement;
 use App\Models\County;
 use App\Models\NewsPost;
@@ -20,8 +21,8 @@ class DemoContentSeeder extends Seeder
     public function run(): void
     {
         $county = County::query()->where('slug', 'butler-county')->firstOrFail();
-        $admin = User::query()->where('email', 'admin@communitywill.test')->firstOrFail();
-        $subscriber = User::query()->where('email', 'subscriber@communitywill.test')->firstOrFail();
+        $admin = $this->resolveUserByRole(RoleSlug::SuperAdmin);
+        $subscriber = $this->resolveUserByRole(RoleSlug::Subscriber);
         $generalCategoryId = PostCategory::query()->where('slug', 'general')->value('id');
         $communityCategoryId = PostCategory::query()->where('slug', 'community')->value('id');
         $generalSubcategoryId = PostSubcategory::query()->where('slug', 'top-stories')->value('id');
@@ -155,5 +156,13 @@ class DemoContentSeeder extends Seeder
         );
 
         $advertisement->counties()->syncWithoutDetaching([$county->id]);
+    }
+
+    private function resolveUserByRole(RoleSlug $role): User
+    {
+        return User::query()
+            ->whereHas('roles', fn ($query) => $query->where('slug', $role->value))
+            ->orderBy('id')
+            ->firstOrFail();
     }
 }
