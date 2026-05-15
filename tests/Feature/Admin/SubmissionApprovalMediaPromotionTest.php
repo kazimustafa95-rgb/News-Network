@@ -39,8 +39,8 @@ class SubmissionApprovalMediaPromotionTest extends TestCase
             'community_will.media.post_disk' => 'public',
         ]);
 
-        $admin = User::query()->where('email', 'admin@communitywill.test')->firstOrFail();
-        $subscriber = User::query()->where('email', 'subscriber@communitywill.test')->firstOrFail();
+        $admin = User::query()->where('email', 'admin@gmail.com')->firstOrFail();
+        $subscriber = User::query()->where('email', 'subscriber@gmail.com')->firstOrFail();
         $county = County::query()->firstOrFail();
         $category = PostCategory::query()->where('slug', 'community')->firstOrFail();
         $subcategory = PostSubcategory::query()->where('slug', 'local-updates')->firstOrFail();

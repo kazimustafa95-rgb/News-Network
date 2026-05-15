@@ -33,10 +33,10 @@ class FilamentPanelAccessTest extends TestCase
     public function test_staff_roles_can_access_the_admin_panel_but_subscribers_cannot(): void
     {
         $panel = Filament::getPanel('admin');
-        $admin = \App\Models\User::query()->where('email', 'admin@communitywill.test')->firstOrFail();
-        $editor = \App\Models\User::query()->where('email', 'editor@communitywill.test')->firstOrFail();
-        $moderator = \App\Models\User::query()->where('email', 'moderator@communitywill.test')->firstOrFail();
-        $subscriber = \App\Models\User::query()->where('email', 'subscriber@communitywill.test')->firstOrFail();
+        $admin = \App\Models\User::query()->where('email', 'admin@gmail.com')->firstOrFail();
+        $editor = \App\Models\User::query()->where('email', 'editor@gmail.com')->firstOrFail();
+        $moderator = \App\Models\User::query()->where('email', 'moderator@gmail.com')->firstOrFail();
+        $subscriber = \App\Models\User::query()->where('email', 'subscriber@gmail.com')->firstOrFail();
 
         $this->assertTrue($admin->canAccessPanel($panel));
         $this->assertTrue($editor->canAccessPanel($panel));

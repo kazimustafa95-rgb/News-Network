@@ -39,7 +39,7 @@ class SubmissionApiTest extends TestCase
     {
         Storage::fake('public');
 
-        $subscriber = User::query()->where('email', 'subscriber@communitywill.test')->firstOrFail();
+        $subscriber = User::query()->where('email', 'subscriber@gmail.com')->firstOrFail();
 
         Sanctum::actingAs($subscriber, [], 'api');
 
@@ -98,7 +98,7 @@ class SubmissionApiTest extends TestCase
     {
         Storage::fake('public');
 
-        $subscriber = User::query()->where('email', 'subscriber@communitywill.test')->firstOrFail();
+        $subscriber = User::query()->where('email', 'subscriber@gmail.com')->firstOrFail();
 
         Sanctum::actingAs($subscriber, [], 'api');
 

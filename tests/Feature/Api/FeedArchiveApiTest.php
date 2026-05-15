@@ -87,7 +87,7 @@ class FeedArchiveApiTest extends TestCase
 
     public function test_purchased_archived_post_can_be_viewed_by_entitled_user(): void
     {
-        $subscriber = User::query()->where('email', 'subscriber@communitywill.test')->firstOrFail();
+        $subscriber = User::query()->where('email', 'subscriber@gmail.com')->firstOrFail();
         $archivedPost = NewsPost::query()
             ->where('status', NewsPostStatus::Archived->value)
             ->firstOrFail();
@@ -101,7 +101,7 @@ class FeedArchiveApiTest extends TestCase
 
     public function test_purchase_history_returns_archived_posts_for_authenticated_user(): void
     {
-        $subscriber = User::query()->where('email', 'subscriber@communitywill.test')->firstOrFail();
+        $subscriber = User::query()->where('email', 'subscriber@gmail.com')->firstOrFail();
 
         Sanctum::actingAs($subscriber, [], 'api');
 
