@@ -17,7 +17,7 @@ class AdminUserSeeder extends Seeder
         $butlerCounty = County::query()->where('slug', 'butler-county')->firstOrFail();
 
         $superAdmin = User::query()->updateOrCreate(
-            ['email' => 'admin@communitywill.test'],
+            ['email' => 'admin@gmail.com'],
             [
                 'name' => 'Community Will Admin',
                 'password' => 'password',
@@ -38,7 +38,7 @@ class AdminUserSeeder extends Seeder
         $superAdmin->roles()->sync(Role::query()->where('slug', RoleSlug::SuperAdmin->value)->pluck('id'));
 
         $editor = User::query()->updateOrCreate(
-            ['email' => 'editor@communitywill.test'],
+            ['email' => 'editor@gmail.com'],
             [
                 'name' => 'County Editor',
                 'password' => 'password',
@@ -59,7 +59,7 @@ class AdminUserSeeder extends Seeder
         $editor->roles()->sync(Role::query()->where('slug', RoleSlug::Editor->value)->pluck('id'));
 
         $moderator = User::query()->updateOrCreate(
-            ['email' => 'moderator@communitywill.test'],
+            ['email' => 'moderator@gmail.com'],
             [
                 'name' => 'Submission Moderator',
                 'password' => 'password',
@@ -80,7 +80,7 @@ class AdminUserSeeder extends Seeder
         $moderator->roles()->sync(Role::query()->where('slug', RoleSlug::Moderator->value)->pluck('id'));
 
         $subscriber = User::query()->updateOrCreate(
-            ['email' => 'subscriber@communitywill.test'],
+            ['email' => 'subscriber@gmail.com'],
             [
                 'name' => 'Butler Subscriber',
                 'password' => 'password',
