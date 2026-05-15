@@ -26,6 +26,11 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->brandName('Community Will')
+            ->brandLogo(asset('branding/light-logo.png'))
+            ->darkModeBrandLogo(asset('branding/logo-dark.png'))
+            ->brandLogoHeight('2rem')
+            ->favicon(asset('branding/favicon.png'))
             ->colors([
                 'primary' => Color::Blue,
             ])
