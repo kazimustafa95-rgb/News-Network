@@ -9,6 +9,7 @@ use App\Models\NewsPost;
 use App\Models\PostVideo;
 use App\Models\User;
 use App\Models\UserSubmission;
+use App\Services\Notification\NotificationService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -74,6 +75,10 @@ class SubmissionReviewService
                 'after_state' => $submission->fresh()->toArray(),
                 'notes' => $attributes['review_notes'] ?? null,
             ]);
+
+            DB::afterCommit(function () use ($submission): void {
+                app(NotificationService::class)->sendSubmissionDecisionNotification($submission->id);
+            });
 
             return $submission->fresh(['user.profile', 'county', 'videos', 'reviewer', 'approvedPost']);
         });
@@ -200,6 +205,10 @@ class SubmissionReviewService
                 'after_state' => $submission->fresh()->toArray(),
                 'notes' => $reason,
             ]);
+
+            DB::afterCommit(function () use ($submission): void {
+                app(NotificationService::class)->sendSubmissionDecisionNotification($submission->id);
+            });
 
             return $submission->fresh(['user.profile', 'county', 'videos', 'reviewer', 'approvedPost']);
         });

@@ -29,6 +29,7 @@ use App\Models\Role;
 use App\Models\Subscription;
 use App\Models\User;
 use App\Models\UserSubmission;
+use App\Observers\NewsPostObserver;
 use App\Policies\AdvertisementPolicy;
 use App\Policies\ActivityLogPolicy;
 use App\Policies\ArchivePurchasePolicy;
@@ -88,5 +89,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('logs.view', fn (User $user): bool => $user->hasPermission('logs.view'));
         Gate::define('subscriptions.view', fn (User $user): bool => $user->hasPermission('subscriptions.view'));
         Gate::define('archives.view', fn (User $user): bool => $user->hasPermission('archives.view'));
+
+        NewsPost::observe(NewsPostObserver::class);
     }
 }
