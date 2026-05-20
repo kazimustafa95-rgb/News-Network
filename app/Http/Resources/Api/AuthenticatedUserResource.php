@@ -21,6 +21,9 @@ class AuthenticatedUserResource extends JsonResource
                 'phone' => $this->profile?->phone,
                 'avatar_path' => $this->profile?->avatar_path,
             ]),
+            'notification_summary' => [
+                'unread_count' => $this->unreadNotifications()->count(),
+            ],
             'locations' => SavedLocationResource::collection($this->whenLoaded('locations')),
             'subscription' => new SubscriptionStatusResource($this->whenLoaded('subscriptions', fn () => $this->activeSubscription())),
             'archive_purchase_summary' => $this->whenLoaded('archivePurchases', fn () => [

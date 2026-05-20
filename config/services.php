@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    'firebase' => [
+        'enabled' => env('FIREBASE_NOTIFICATIONS_ENABLED', false),
+        'project_id' => env('FIREBASE_PROJECT_ID'),
+        'credentials' => env('FIREBASE_CREDENTIALS'),
+        'connect_timeout' => (int) env('FIREBASE_CONNECT_TIMEOUT', 5),
+        'request_timeout' => (int) env('FIREBASE_REQUEST_TIMEOUT', 10),
+    ],
+
 ];

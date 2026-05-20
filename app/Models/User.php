@@ -95,6 +95,11 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasMany(ArchivePurchase::class);
     }
 
+    public function notificationDevices(): HasMany
+    {
+        return $this->hasMany(UserNotificationDevice::class);
+    }
+
     public function activityLogs(): HasMany
     {
         return $this->hasMany(ActivityLog::class);

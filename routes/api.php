@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\Auth\PasswordController;
 use App\Http\Controllers\Api\Feed\ArchiveController;
 use App\Http\Controllers\Api\Feed\FeedController;
 use App\Http\Controllers\Api\Location\LocationController;
+use App\Http\Controllers\Api\Notification\NotificationController;
 use App\Http\Controllers\Api\Profile\ProfileController;
 use App\Http\Controllers\Api\Submission\SubmissionController;
 use App\Http\Controllers\Api\Subscription\SubscriptionController;
@@ -38,6 +39,11 @@ Route::middleware(['auth:api', 'active'])->group(function (): void {
 
     Route::put('profile', [ProfileController::class, 'update']);
     Route::post('user/location', [LocationController::class, 'storeUserLocation']);
+    Route::get('notifications', [NotificationController::class, 'index']);
+    Route::post('notifications/device-token', [NotificationController::class, 'storeDeviceToken']);
+    Route::delete('notifications/device-token', [NotificationController::class, 'destroyDeviceToken']);
+    Route::post('notifications/read-all', [NotificationController::class, 'markAllAsRead']);
+    Route::post('notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
 
     Route::post('archive/purchase', [ArchiveController::class, 'purchase']);
     Route::get('purchases', [ArchiveController::class, 'history']);
