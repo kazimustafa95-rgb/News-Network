@@ -127,12 +127,41 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table('news_posts', function (Blueprint $table): void {
-            $table->dropConstrainedForeignId('post_subcategory_id');
-            $table->dropConstrainedForeignId('post_category_id');
-        });
+        if (Schema::hasTable('news_posts')) {
+            $this->dropForeignKeyIfExists('news_posts', 'post_subcategory_id');
+            $this->dropForeignKeyIfExists('news_posts', 'post_category_id');
+
+            Schema::table('news_posts', function (Blueprint $table): void {
+                if (Schema::hasColumn('news_posts', 'post_subcategory_id')) {
+                    $table->dropColumn('post_subcategory_id');
+                }
+
+                if (Schema::hasColumn('news_posts', 'post_category_id')) {
+                    $table->dropColumn('post_category_id');
+                }
+            });
+        }
 
         Schema::dropIfExists('post_subcategories');
         Schema::dropIfExists('post_categories');
+    }
+
+    protected function dropForeignKeyIfExists(string $table, string $column): void
+    {
+        $constraint = DB::table('information_schema.KEY_COLUMN_USAGE')
+            ->select('CONSTRAINT_NAME')
+            ->where('TABLE_SCHEMA', DB::getDatabaseName())
+            ->where('TABLE_NAME', $table)
+            ->where('COLUMN_NAME', $column)
+            ->whereNotNull('REFERENCED_TABLE_NAME')
+            ->value('CONSTRAINT_NAME');
+
+        if ($constraint) {
+            DB::statement(sprintf(
+                'ALTER TABLE `%s` DROP FOREIGN KEY `%s`',
+                $table,
+                $constraint,
+            ));
+        }
     }
 };
