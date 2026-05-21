@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
             RolePermissionSeeder::class,
             GeographySeeder::class,
             AdminUserSeeder::class,
+            LegalDocumentSeeder::class,
             DemoContentSeeder::class,
         ]);
     }

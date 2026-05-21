@@ -4,9 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 
 class UserProfile extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
         'user_id',
         'first_name',
@@ -24,6 +28,15 @@ class UserProfile extends Model
         return [
             'onboarding_completed_at' => 'datetime',
         ];
+    }
+
+    public function getAvatarUrlAttribute(): ?string
+    {
+        if (! $this->avatar_path) {
+            return null;
+        }
+
+        return Storage::disk(config('community_will.media.profile_disk'))->url($this->avatar_path);
     }
 
     public function user(): BelongsTo

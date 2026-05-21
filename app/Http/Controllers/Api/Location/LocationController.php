@@ -3,10 +3,11 @@
 namespace App\Http\Controllers\Api\Location;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\AutoDetectLocationRequest;
 use App\Http\Requests\Api\StoreUserLocationRequest;
+use App\Http\Resources\Api\CountyResource;
 use App\Http\Resources\Api\CountryResource;
 use App\Http\Resources\Api\RegionResource;
-use App\Http\Resources\Api\CountyResource;
 use App\Http\Resources\Api\SavedLocationResource;
 use App\Models\Country;
 use App\Models\Region;
@@ -44,6 +45,30 @@ class LocationController extends Controller
             CountyResource::collection($this->locations->counties($region))->resolve(),
             'Counties fetched successfully.'
         );
+    }
+
+    public function autoDetect(AutoDetectLocationRequest $request): JsonResponse
+    {
+        $payload = $this->locations->autoDetect($request->validated());
+
+        return $this->successResponse([
+            'latitude' => $payload['latitude'],
+            'longitude' => $payload['longitude'],
+            'label' => $payload['label'],
+            'formatted_address' => $payload['formatted_address'],
+            'place_id' => $payload['place_id'],
+            'country_id' => $payload['country']?->id,
+            'region_id' => $payload['region']?->id,
+            'county_id' => $payload['county']?->id,
+            'country_label' => $payload['country_label'],
+            'region_label' => $payload['region_label'],
+            'county_label' => $payload['county_label'],
+            'matched' => $payload['matched'],
+            'can_save' => $payload['can_save'],
+            'country' => $payload['country'] ? (new CountryResource($payload['country']))->resolve() : null,
+            'region' => $payload['region'] ? (new RegionResource($payload['region']))->resolve() : null,
+            'county' => $payload['county'] ? (new CountyResource($payload['county']))->resolve() : null,
+        ], 'Location detected successfully.');
     }
 
     public function storeUserLocation(StoreUserLocationRequest $request): JsonResponse

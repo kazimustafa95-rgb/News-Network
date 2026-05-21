@@ -22,6 +22,7 @@ class RolePermissionSeeder extends Seeder
             ['name' => 'View Subscriptions', 'slug' => 'subscriptions.view', 'group' => 'subscriptions'],
             ['name' => 'View Logs', 'slug' => 'logs.view', 'group' => 'logs'],
             ['name' => 'Manage Roles', 'slug' => 'roles.manage', 'group' => 'roles'],
+            ['name' => 'Manage Legal Pages', 'slug' => 'pages.manage', 'group' => 'pages'],
         ];
 
         foreach ($permissions as $permissionData) {
@@ -35,7 +36,7 @@ class RolePermissionSeeder extends Seeder
             RoleSlug::User->value => ['dashboard.view'],
             RoleSlug::Subscriber->value => ['dashboard.view'],
             RoleSlug::Moderator->value => ['dashboard.view', 'submissions.review'],
-            RoleSlug::Editor->value => ['dashboard.view', 'counties.manage', 'posts.manage', 'submissions.review', 'ads.manage', 'archives.view', 'subscriptions.view', 'logs.view'],
+            RoleSlug::Editor->value => ['dashboard.view', 'counties.manage', 'posts.manage', 'submissions.review', 'ads.manage', 'archives.view', 'subscriptions.view', 'logs.view', 'pages.manage'],
             RoleSlug::SuperAdmin->value => array_column($permissions, 'slug'),
         ];
 

@@ -20,4 +20,10 @@ interface LocationRepositoryInterface
     public function saveUserLocation(User $user, array $attributes): UserLocation;
 
     public function findCountyById(int $countyId): ?County;
+
+    public function findCountryForDetection(?string $countryName, ?string $countryIso2): ?Country;
+
+    public function findRegionForDetection(Country $country, ?string $regionName, ?string $regionCode): ?Region;
+
+    public function findCountyForDetection(Region $region, array $candidateNames): ?County;
 }

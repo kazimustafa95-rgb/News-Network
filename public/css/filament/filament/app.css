@@ -2215,7 +2215,7 @@
 
     @media (min-width:64rem) {
         .fi-grid:not(.fi-grid-direction-col).lg\:fi-grid-cols {
-            grid-template-columns: var(--cols-lg)
+            grid-template-columns: var(--cols-xl)
         }
     }
 

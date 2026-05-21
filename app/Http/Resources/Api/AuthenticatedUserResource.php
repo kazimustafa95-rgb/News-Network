@@ -20,6 +20,7 @@ class AuthenticatedUserResource extends JsonResource
                 'last_name' => $this->profile?->last_name,
                 'phone' => $this->profile?->phone,
                 'avatar_path' => $this->profile?->avatar_path,
+                'avatar_url' => $this->profile?->avatar_url,
             ]),
             'notification_summary' => [
                 'unread_count' => $this->unreadNotifications()->count(),
