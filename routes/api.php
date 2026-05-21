@@ -27,6 +27,7 @@ Route::post('reset-password', [PasswordController::class, 'reset']);
 Route::get('locations/countries', [LocationController::class, 'countries']);
 Route::get('locations/countries/{country}/regions', [LocationController::class, 'regions']);
 Route::get('locations/regions/{region}/counties', [LocationController::class, 'counties']);
+Route::post('locations/auto-detect', [LocationController::class, 'autoDetect']);
 
 Route::get('feed', [FeedController::class, 'index']);
 Route::get('feed/counties', [FeedController::class, 'availableCounties']);
@@ -38,6 +39,7 @@ Route::middleware(['auth:api', 'active'])->group(function (): void {
     Route::get('me', [AuthController::class, 'me']);
 
     Route::put('profile', [ProfileController::class, 'update']);
+    Route::delete('profile', [ProfileController::class, 'destroy']);
     Route::post('user/location', [LocationController::class, 'storeUserLocation']);
     Route::get('notifications', [NotificationController::class, 'index']);
     Route::post('notifications/device-token', [NotificationController::class, 'storeDeviceToken']);

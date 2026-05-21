@@ -43,4 +43,10 @@ return [
         'request_timeout' => (int) env('FIREBASE_REQUEST_TIMEOUT', 10),
     ],
 
+    'google_maps' => [
+        'api_key' => env('GOOGLE_MAPS_API_KEY'),
+        'connect_timeout' => (int) env('GOOGLE_MAPS_CONNECT_TIMEOUT', 5),
+        'request_timeout' => (int) env('GOOGLE_MAPS_REQUEST_TIMEOUT', 10),
+    ],
+
 ];

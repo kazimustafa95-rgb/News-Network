@@ -2,13 +2,21 @@
 
 namespace App\Http\Requests\Api;
 
+use App\Http\Requests\Concerns\NormalizesBooleanInputs;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreUserLocationRequest extends FormRequest
 {
+    use NormalizesBooleanInputs;
+
     public function authorize(): bool
     {
         return true;
+    }
+
+    protected function booleanFields(): array
+    {
+        return ['is_default'];
     }
 
     public function rules(): array

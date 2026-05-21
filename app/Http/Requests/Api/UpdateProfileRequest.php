@@ -2,14 +2,22 @@
 
 namespace App\Http\Requests\Api;
 
+use App\Http\Requests\Concerns\NormalizesBooleanInputs;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class UpdateProfileRequest extends FormRequest
 {
+    use NormalizesBooleanInputs;
+
     public function authorize(): bool
     {
         return true;
+    }
+
+    protected function booleanFields(): array
+    {
+        return ['remove_avatar'];
     }
 
     public function rules(): array
@@ -21,6 +29,7 @@ class UpdateProfileRequest extends FormRequest
             'last_name' => ['nullable', 'string', 'max:100'],
             'phone' => ['nullable', 'string', 'max:25'],
             'avatar' => ['nullable', 'image', 'max:2048'],
+            'remove_avatar' => ['nullable', 'boolean'],
         ];
     }
 }

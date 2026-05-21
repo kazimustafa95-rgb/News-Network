@@ -99,4 +99,18 @@ class NotificationApiTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.unread_count', 0);
     }
+
+    public function test_user_can_list_notifications_with_string_boolean_query_value(): void
+    {
+        $subscriber = User::query()->where('email', 'subscriber@gmail.com')->firstOrFail();
+
+        Sanctum::actingAs($subscriber, [], 'api');
+
+        $response = $this->getJson('/api/notifications?per_page=20&unread_only=false');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('meta.per_page', 20);
+    }
 }
