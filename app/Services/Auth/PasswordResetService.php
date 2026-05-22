@@ -24,7 +24,7 @@ class PasswordResetService
             [
                 'email' => $payload['email'],
                 'password' => $payload['password'],
-                'password_confirmation' => $payload['password_confirmation'],
+                'password_confirmation' => $payload['password_confirmation'] ?? '',
                 'token' => $payload['token'],
             ],
             function ($user, $password): void {

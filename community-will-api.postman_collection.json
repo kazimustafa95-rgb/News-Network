@@ -1,0 +1,1860 @@
+﻿{
+    "info":  {
+                 "_postman_id":  "3f5e20a2-b123-49fc-8bd5-f52a3341d0a7",
+                 "name":  "Community Will API",
+                 "description":  "Postman collection for the currently implemented Community Will JSON/mobile API routes.\n\nNotes:\n- Import this collection together with community-will-local.postman_environment.json.\n- Seeded test account: subscriber@gmail.com / password.\n- Recommended demo setup order: Get Feed Counties -\u003e Get Categories -\u003e Get Feed.\n- Feed and archive requests use feed_county_id so location lookups do not accidentally overwrite your content filters.\n- For password resets, run Forgot Password, copy the token from the email link into reset_token, then use either Open Reset Password Page or Reset Password.\n- For multipart requests like Create Submission and Update Profile, choose a real local file in Postman before sending.\n- Admin is currently a Filament web panel under /admin, not a REST JSON API, so it is intentionally not included here.\n- Do not import docs/figma-screen-collection.json into Postman. That file is a design audit reference, not a Postman collection.",
+                 "schema":  "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+             },
+    "item":  [
+                 {
+                     "name":  "Auth",
+                     "item":  [
+                                  {
+                                      "name":  "Register",
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "if (pm.response.code === 200) {",
+                                                                                    "  const json = pm.response.json();",
+                                                                                    "  if (json?.data?.email) pm.environment.set(\u0027registration_email\u0027, json.data.email);",
+                                                                                    "}"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"name\": \"Postman User {{$timestamp}}\",\n  \"email\": \"postman.{{$timestamp}}@example.test\",\n  \"password\": \"Password1!\",\n  \"password_confirmation\": \"Password1!\",\n  \"device_name\": \"{{device_name}}\"\n}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               }
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/api/register",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "register"
+                                                                           ]
+                                                              },
+                                                      "description":  "Start mobile account registration. This request stores the signup temporarily and sends a 6-digit OTP to the email address. The response email is saved into `registration_email`."
+                                                  },
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "name":  "Verify Registration OTP",
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "const json = pm.response.json();",
+                                                                                    "const token = json?.data?.token || \u0027\u0027;",
+                                                                                    "if (pm.response.code === 201 \u0026\u0026 token) {",
+                                                                                    "  pm.environment.set(\u0027auth_token\u0027, token);",
+                                                                                    "  pm.collectionVariables.set(\u0027auth_token\u0027, token);",
+                                                                                    "}",
+                                                                                    "pm.test(\u0027Verify OTP response contains auth token\u0027, function () {",
+                                                                                    "  if (pm.response.code === 201) {",
+                                                                                    "    pm.expect(token, \u0027Expected token in response data.token\u0027).to.be.a(\u0027string\u0027).and.not.empty;",
+                                                                                    "  }",
+                                                                                    "});"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"email\": \"{{registration_email}}\",\n  \"otp\": \"CHANGE_ME_OTP_CODE\"\n}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               }
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/api/register/verify-otp",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "register",
+                                                                               "verify-otp"
+                                                                           ]
+                                                              },
+                                                      "description":  "Complete account creation after reading the OTP from the email inbox. On success, the returned Sanctum token is saved into `auth_token`."
+                                                  },
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "name":  "Resend Registration OTP",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"email\": \"{{registration_email}}\"\n}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               }
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/api/register/resend-otp",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "register",
+                                                                               "resend-otp"
+                                                                           ]
+                                                              },
+                                                      "description":  "Resend the signup verification OTP for a pending registration email."
+                                                  },
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "name":  "Login",
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "const json = pm.response.json();",
+                                                                                    "const token = json?.data?.token || \u0027\u0027;",
+                                                                                    "if (pm.response.code === 200 \u0026\u0026 token) {",
+                                                                                    "  pm.environment.set(\u0027auth_token\u0027, token);",
+                                                                                    "  pm.collectionVariables.set(\u0027auth_token\u0027, token);",
+                                                                                    "}",
+                                                                                    "pm.test(\u0027Login response contains auth token\u0027, function () {",
+                                                                                    "  if (pm.response.code === 200) {",
+                                                                                    "    pm.expect(token, \u0027Expected token in response data.token\u0027).to.be.a(\u0027string\u0027).and.not.empty;",
+                                                                                    "  }",
+                                                                                    "});"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"email\": \"{{seeded_email}}\",\n  \"password\": \"{{seeded_password}}\",\n  \"device_name\": \"{{device_name}}\"\n}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               }
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/api/login",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "login"
+                                                                           ]
+                                                              },
+                                                      "description":  "Login with the seeded subscriber account. On success, the returned Sanctum token is saved into `auth_token`."
+                                                  },
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "name":  "Me",
+                                      "request":  {
+                                                      "auth":  {
+                                                                   "type":  "bearer",
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "value":  "{{auth_token}}",
+                                                                                      "type":  "string"
+                                                                                  }
+                                                                              ]
+                                                               },
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/api/me",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "me"
+                                                                           ]
+                                                              },
+                                                      "description":  "Fetch the authenticated user profile, active subscription summary, saved locations, and archive purchase summary."
+                                                  },
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "name":  "Logout",
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "if (pm.response.code === 200) {",
+                                                                                    "  pm.environment.unset(\u0027auth_token\u0027);",
+                                                                                    "  pm.collectionVariables.unset(\u0027auth_token\u0027);",
+                                                                                    "  pm.environment.unset(\u0027notification_device_token\u0027);",
+                                                                                    "  pm.collectionVariables.unset(\u0027notification_device_token\u0027);",
+                                                                                    "}"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "request":  {
+                                                      "auth":  {
+                                                                   "type":  "bearer",
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "value":  "{{auth_token}}",
+                                                                                      "type":  "string"
+                                                                                  }
+                                                                              ]
+                                                               },
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"all_devices\": false\n}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               }
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/api/logout",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "logout"
+                                                                           ]
+                                                              },
+                                                      "description":  "Logout the current device token. Set `all_devices` to `true` to revoke all tokens."
+                                                  },
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "name":  "Forgot Password",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"email\": \"{{reset_email}}\"\n}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               }
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/api/forgot-password",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "forgot-password"
+                                                                           ]
+                                                              },
+                                                      "description":  "Send a password reset link to the email in reset_email. Keep reset_email aligned with seeded_email, or point it at another existing account before sending."
+                                                  },
+                                      "response":  [
+
+                                                   ],
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "if (pm.response.code === 200) {",
+                                                                                    "  const resetEmail = pm.variables.replaceIn(\u0027{{reset_email}}\u0027);",
+                                                                                    "  if (resetEmail) pm.environment.set(\u0027reset_email\u0027, resetEmail);",
+                                                                                    "}"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Open Reset Password Page",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "text/html"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/reset-password/{{reset_token}}?email={{reset_email}}",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "reset-password",
+                                                                               "{{reset_token}}"
+                                                                           ],
+                                                                  "query":  [
+                                                                                {
+                                                                                    "key":  "email",
+                                                                                    "value":  "{{reset_email}}"
+                                                                                }
+                                                                            ]
+                                                              },
+                                                      "description":  "Open the browser reset-password page with the token from the email link. Copy the token from the reset email into reset_token first."
+                                                  },
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "name":  "Reset Password",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"email\": \"{{reset_email}}\",\n  \"token\": \"{{reset_token}}\",\n  \"password\": \"{{new_password}}\",\n  \"password_confirmation\": \"{{new_password}}\"\n}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               }
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/api/reset-password",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "reset-password"
+                                                                           ]
+                                                              },
+                                                      "description":  "Complete the password reset with the token from the email link. If reset_email matches seeded_email, this request also updates seeded_password to new_password for future login calls."
+                                                  },
+                                      "response":  [
+
+                                                   ],
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "if (pm.response.code === 200) {",
+                                                                                    "  const resetEmail = (pm.environment.get(\u0027reset_email\u0027) || \u0027\u0027).toLowerCase();",
+                                                                                    "  const seededEmail = (pm.environment.get(\u0027seeded_email\u0027) || \u0027\u0027).toLowerCase();",
+                                                                                    "  const newPassword = pm.environment.get(\u0027new_password\u0027) || \u0027\u0027;",
+                                                                                    "  if (resetEmail \u0026\u0026 seededEmail \u0026\u0026 resetEmail === seededEmail \u0026\u0026 newPassword) pm.environment.set(\u0027seeded_password\u0027, newPassword);",
+                                                                                    "}"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "Locations",
+                     "item":  [
+                                  {
+                                      "name":  "Get Countries",
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "const json = pm.response.json();",
+                                                                                    "if (json?.data?.length) pm.environment.set(\u0027country_id\u0027, json.data[0].id);"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/api/locations/countries",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "locations",
+                                                                               "countries"
+                                                                           ]
+                                                              },
+                                                      "description":  "Fetch active countries for the location flow. This stores the first returned country id into country_id."
+                                                  },
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "name":  "Get Regions By Country",
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "const json = pm.response.json();",
+                                                                                    "if (json?.data?.length) pm.environment.set(\u0027region_id\u0027, json.data[0].id);"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/api/locations/countries/{{country_id}}/regions",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "locations",
+                                                                               "countries",
+                                                                               "{{country_id}}",
+                                                                               "regions"
+                                                                           ]
+                                                              },
+                                                      "description":  "Fetch active regions for the selected location country. This stores the first returned region id into region_id."
+                                                  },
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "name":  "Get Counties By Region",
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "const json = pm.response.json();",
+                                                                                    "if (json?.data?.length) pm.environment.set(\u0027county_id\u0027, json.data[0].id);"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/api/locations/regions/{{region_id}}/counties",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "locations",
+                                                                               "regions",
+                                                                               "{{region_id}}",
+                                                                               "counties"
+                                                                           ]
+                                                              },
+                                                      "description":  "Fetch counties for the selected location region. This stores the first returned county id into county_id for location saving only; feed requests use feed_county_id."
+                                                  },
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "name":  "Auto Detect Location",
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "const json = pm.response.json();",
+                                                                                    "if (json?.data?.country_id) pm.environment.set(\u0027country_id\u0027, json.data.country_id);",
+                                                                                    "if (json?.data?.region_id) pm.environment.set(\u0027region_id\u0027, json.data.region_id);",
+                                                                                    "if (json?.data?.county_id) pm.environment.set(\u0027county_id\u0027, json.data.county_id);",
+                                                                                    "if (json?.data?.label) pm.environment.set(\u0027detected_location_label\u0027, json.data.label);"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"latitude\": {{location_latitude}},\n  \"longitude\": {{location_longitude}}\n}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               }
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/api/locations/auto-detect",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "locations",
+                                                                               "auto-detect"
+                                                                           ]
+                                                              },
+                                                      "description":  "Reverse-geocode the provided coordinates, then store the detected location values in country_id, region_id, county_id, and detected_location_label. This does not change feed_county_id."
+                                                  },
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "name":  "Save User Location",
+                                      "request":  {
+                                                      "auth":  {
+                                                                   "type":  "bearer",
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "value":  "{{auth_token}}",
+                                                                                      "type":  "string"
+                                                                                  }
+                                                                              ]
+                                                               },
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"country_id\": {{country_id}},\n  \"region_id\": {{region_id}},\n  \"county_id\": {{county_id}},\n  \"label\": \"{{detected_location_label}}\",\n  \"is_default\": true\n}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               }
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/api/user/location",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "user",
+                                                                               "location"
+                                                                           ]
+                                                              },
+                                                      "description":  "Save a user county selection after login. Run `Auto Detect Location` first if you want to post the detected ids and label automatically."
+                                                  },
+                                      "response":  [
+
+                                                   ]
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "Taxonomy",
+                     "item":  [
+                                  {
+                                      "name":  "Get Categories",
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "const json = pm.response.json();",
+                                                                                    "const categories = json?.data || [];",
+                                                                                    "const preferredCategorySlug = (pm.environment.get(\u0027preferred_category_slug\u0027) || \u0027\u0027).toLowerCase();",
+                                                                                    "const preferredSubcategorySlug = (pm.environment.get(\u0027preferred_subcategory_slug\u0027) || \u0027\u0027).toLowerCase();",
+                                                                                    "const selectedCategory = categories.find((category) =\u003e ((category?.slug || \u0027\u0027).toLowerCase() === preferredCategorySlug)) || categories[0];",
+                                                                                    "if (selectedCategory?.id) pm.environment.set(\u0027category_id\u0027, selectedCategory.id);",
+                                                                                    "if (selectedCategory?.slug) pm.environment.set(\u0027category_slug\u0027, selectedCategory.slug);",
+                                                                                    "const subcategories = selectedCategory?.subcategories || [];",
+                                                                                    "const selectedSubcategory = subcategories.find((subcategory) =\u003e ((subcategory?.slug || \u0027\u0027).toLowerCase() === preferredSubcategorySlug)) || subcategories[0];",
+                                                                                    "if (selectedSubcategory?.id) pm.environment.set(\u0027subcategory_id\u0027, selectedSubcategory.id);",
+                                                                                    "if (selectedSubcategory?.slug) pm.environment.set(\u0027subcategory_slug\u0027, selectedSubcategory.slug);"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/api/categories",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "categories"
+                                                                           ]
+                                                              },
+                                                      "description":  "Fetch active categories with nested subcategories. The scripts prefer preferred_category_slug and preferred_subcategory_slug when available, otherwise they save the first matching ids."
+                                                  },
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "name":  "Get Subcategories By Category",
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "const json = pm.response.json();",
+                                                                                    "const subcategories = json?.data || [];",
+                                                                                    "const preferredSubcategorySlug = (pm.environment.get(\u0027preferred_subcategory_slug\u0027) || \u0027\u0027).toLowerCase();",
+                                                                                    "const selectedSubcategory = subcategories.find((subcategory) =\u003e ((subcategory?.slug || \u0027\u0027).toLowerCase() === preferredSubcategorySlug)) || subcategories[0];",
+                                                                                    "if (selectedSubcategory?.id) pm.environment.set(\u0027subcategory_id\u0027, selectedSubcategory.id);",
+                                                                                    "if (selectedSubcategory?.slug) pm.environment.set(\u0027subcategory_slug\u0027, selectedSubcategory.slug);"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/api/categories/{{category_id}}/subcategories",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "categories",
+                                                                               "{{category_id}}",
+                                                                               "subcategories"
+                                                                           ]
+                                                              },
+                                                      "description":  "Fetch active subcategories for the selected category. Run Get Categories first to populate category_id, or set it manually before sending."
+                                                  },
+                                      "response":  [
+
+                                                   ]
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "Feed",
+                     "item":  [
+                                  {
+                                      "name":  "Get Feed",
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "const json = pm.response.json();",
+                                                                                    "const timeline = json?.data?.timeline || [];",
+                                                                                    "const county = json?.data?.county || null;",
+                                                                                    "if (timeline.length) pm.environment.set(\u0027post_id\u0027, timeline[0].id);",
+                                                                                    "if (county?.id) pm.environment.set(\u0027last_feed_county_id\u0027, String(county.id));",
+                                                                                    "if (county?.name) pm.environment.set(\u0027last_feed_county_name\u0027, county.name);",
+                                                                                    "if (json?.meta?.total !== undefined) pm.environment.set(\u0027last_feed_total\u0027, String(json.meta.total));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/api/feed?county_id={{feed_county_id}}\u0026search=\u0026topic=\u0026category_id={{category_id}}\u0026subcategory_id={{subcategory_id}}\u0026per_page=10",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "feed"
+                                                                           ],
+                                                                  "query":  [
+                                                                                {
+                                                                                    "key":  "county_id",
+                                                                                    "value":  "{{feed_county_id}}"
+                                                                                },
+                                                                                {
+                                                                                    "key":  "search",
+                                                                                    "value":  ""
+                                                                                },
+                                                                                {
+                                                                                    "key":  "topic",
+                                                                                    "value":  ""
+                                                                                },
+                                                                                {
+                                                                                    "key":  "category_id",
+                                                                                    "value":  "{{category_id}}"
+                                                                                },
+                                                                                {
+                                                                                    "key":  "subcategory_id",
+                                                                                    "value":  "{{subcategory_id}}"
+                                                                                },
+                                                                                {
+                                                                                    "key":  "per_page",
+                                                                                    "value":  "10"
+                                                                                }
+                                                                            ]
+                                                              },
+                                                      "description":  "Fetch the public county feed using feed_county_id. Run Get Feed Counties first so the collection points at the demo county instead of whichever location request last touched county_id."
+                                                  },
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "name":  "Get Feed Counties",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/api/feed/counties?search={{feed_county_search}}",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "feed",
+                                                                               "counties"
+                                                                           ],
+                                                                  "query":  [
+                                                                                {
+                                                                                    "key":  "search",
+                                                                                    "value":  "{{feed_county_search}}"
+                                                                                }
+                                                                            ]
+                                                              },
+                                                      "description":  "Fetch counties available for feed switching. This searches with feed_county_search, then stores the best match in feed_county_id and feed_county_name."
+                                                  },
+                                      "response":  [
+
+                                                   ],
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "const json = pm.response.json();",
+                                                                                    "const counties = json?.data || [];",
+                                                                                    "const preferredName = (pm.environment.get(\u0027feed_county_name\u0027) || \u0027\u0027).toLowerCase();",
+                                                                                    "const preferredSearch = (pm.environment.get(\u0027feed_county_search\u0027) || \u0027\u0027).toLowerCase();",
+                                                                                    "const selectedCounty = counties.find((county) =\u003e {",
+                                                                                    "  const name = (county?.name || \u0027\u0027).toLowerCase();",
+                                                                                    "  const slug = (county?.slug || \u0027\u0027).toLowerCase();",
+                                                                                    "  return (preferredName \u0026\u0026 name === preferredName) || (preferredSearch \u0026\u0026 (name.includes(preferredSearch) || slug.includes(preferredSearch)));",
+                                                                                    "}) || counties[0];",
+                                                                                    "if (selectedCounty?.id) pm.environment.set(\u0027feed_county_id\u0027, selectedCounty.id);",
+                                                                                    "if (selectedCounty?.name) pm.environment.set(\u0027feed_county_name\u0027, selectedCounty.name);"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Get Feed Post Detail",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/api/feed/{{post_id}}",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "feed",
+                                                                               "{{post_id}}"
+                                                                           ]
+                                                              },
+                                                      "description":  "Fetch a public live post detail. This same endpoint is also used for entitled archived posts."
+                                                  },
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "name":  "Get Archive By Date",
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "const json = pm.response.json();",
+                                                                                    "const posts = json?.data?.posts || [];",
+                                                                                    "if (posts.length) pm.environment.set(\u0027archive_post_id\u0027, posts[0].id);"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/api/archive?county_id={{feed_county_id}}\u0026archive_date={{archive_date}}\u0026search=\u0026per_page=10",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "archive"
+                                                                           ],
+                                                                  "query":  [
+                                                                                {
+                                                                                    "key":  "county_id",
+                                                                                    "value":  "{{feed_county_id}}"
+                                                                                },
+                                                                                {
+                                                                                    "key":  "archive_date",
+                                                                                    "value":  "{{archive_date}}"
+                                                                                },
+                                                                                {
+                                                                                    "key":  "search",
+                                                                                    "value":  ""
+                                                                                },
+                                                                                {
+                                                                                    "key":  "per_page",
+                                                                                    "value":  "10"
+                                                                                }
+                                                                            ]
+                                                              },
+                                                      "description":  "Search archive content for the selected feed county and archive date. Run Get Feed Counties first so feed_county_id points at the same county as the public feed."
+                                                  },
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "name":  "Purchase Archive Access",
+                                      "request":  {
+                                                      "auth":  {
+                                                                   "type":  "bearer",
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "value":  "{{auth_token}}",
+                                                                                      "type":  "string"
+                                                                                  }
+                                                                              ]
+                                                               },
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"county_id\": {{feed_county_id}},\n  \"archive_date\": \"{{archive_date}}\",\n  \"provider\": \"manual\",\n  \"provider_transaction_id\": \"arch_{{$timestamp}}\",\n  \"purchase_token\": \"manual-postman-purchase\",\n  \"amount_cents\": 999\n}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               }
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/api/archive/purchase",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "archive",
+                                                                               "purchase"
+                                                                           ]
+                                                              },
+                                                      "description":  "Record or verify archive access for the current feed_county_id and archive_date."
+                                                  },
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "name":  "Get Archived Post Detail After Purchase",
+                                      "request":  {
+                                                      "auth":  {
+                                                                   "type":  "bearer",
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "value":  "{{auth_token}}",
+                                                                                      "type":  "string"
+                                                                                  }
+                                                                              ]
+                                                               },
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/api/feed/{{archive_post_id}}",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "feed",
+                                                                               "{{archive_post_id}}"
+                                                                           ]
+                                                              },
+                                                      "description":  "Fetch an archived post detail after archive access has been purchased."
+                                                  },
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "name":  "Get Purchase History",
+                                      "request":  {
+                                                      "auth":  {
+                                                                   "type":  "bearer",
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "value":  "{{auth_token}}",
+                                                                                      "type":  "string"
+                                                                                  }
+                                                                              ]
+                                                               },
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/api/purchases?search=\u0026county_id={{feed_county_id}}\u0026archive_date=\u0026per_page=15",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "purchases"
+                                                                           ],
+                                                                  "query":  [
+                                                                                {
+                                                                                    "key":  "search",
+                                                                                    "value":  ""
+                                                                                },
+                                                                                {
+                                                                                    "key":  "county_id",
+                                                                                    "value":  "{{feed_county_id}}"
+                                                                                },
+                                                                                {
+                                                                                    "key":  "archive_date",
+                                                                                    "value":  ""
+                                                                                },
+                                                                                {
+                                                                                    "key":  "per_page",
+                                                                                    "value":  "15"
+                                                                                }
+                                                                            ]
+                                                              },
+                                                      "description":  "Fetch the authenticated user archive purchase history, optionally filtered by the current feed_county_id."
+                                                  },
+                                      "response":  [
+
+                                                   ]
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "Notifications",
+                     "item":  [
+                                  {
+                                      "name":  "List Notifications",
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "const json = pm.response.json();",
+                                                                                    "if (json?.data?.length) pm.environment.set(\u0027notification_id\u0027, json.data[0].id);"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "request":  {
+                                                      "auth":  {
+                                                                   "type":  "bearer",
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "value":  "{{auth_token}}",
+                                                                                      "type":  "string"
+                                                                                  }
+                                                                              ]
+                                                               },
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/api/notifications?per_page=20\u0026unread_only=false",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "notifications"
+                                                                           ],
+                                                                  "query":  [
+                                                                                {
+                                                                                    "key":  "per_page",
+                                                                                    "value":  "20"
+                                                                                },
+                                                                                {
+                                                                                    "key":  "unread_only",
+                                                                                    "value":  "false"
+                                                                                }
+                                                                            ]
+                                                              },
+                                                      "description":  "Fetch the authenticated user\u0027s in-app notification inbox. The first notification id is saved into `notification_id`."
+                                                  },
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "name":  "Register Device Token",
+                                      "request":  {
+                                                      "auth":  {
+                                                                   "type":  "bearer",
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "value":  "{{auth_token}}",
+                                                                                      "type":  "string"
+                                                                                  }
+                                                                              ]
+                                                               },
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"token\": \"{{notification_device_token}}\",\n  \"platform\": \"android\",\n  \"device_name\": \"Postman Test Device\",\n  \"app_version\": \"1.0.0\"\n}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               }
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/api/notifications/device-token",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "notifications",
+                                                                               "device-token"
+                                                                           ]
+                                                              },
+                                                      "description":  "Register the current device for Firebase push notifications."
+                                                  },
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "name":  "Mark Notification As Read",
+                                      "request":  {
+                                                      "auth":  {
+                                                                   "type":  "bearer",
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "value":  "{{auth_token}}",
+                                                                                      "type":  "string"
+                                                                                  }
+                                                                              ]
+                                                               },
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/api/notifications/{{notification_id}}/read",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "notifications",
+                                                                               "{{notification_id}}",
+                                                                               "read"
+                                                                           ]
+                                                              },
+                                                      "description":  "Mark a single notification as read. Run `List Notifications` first to capture `notification_id`."
+                                                  },
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "name":  "Mark All Notifications As Read",
+                                      "request":  {
+                                                      "auth":  {
+                                                                   "type":  "bearer",
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "value":  "{{auth_token}}",
+                                                                                      "type":  "string"
+                                                                                  }
+                                                                              ]
+                                                               },
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/api/notifications/read-all",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "notifications",
+                                                                               "read-all"
+                                                                           ]
+                                                              },
+                                                      "description":  "Mark every notification in the current user\u0027s inbox as read."
+                                                  },
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "name":  "Delete Device Token",
+                                      "request":  {
+                                                      "auth":  {
+                                                                   "type":  "bearer",
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "value":  "{{auth_token}}",
+                                                                                      "type":  "string"
+                                                                                  }
+                                                                              ]
+                                                               },
+                                                      "method":  "DELETE",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"token\": \"{{notification_device_token}}\"\n}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               }
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/api/notifications/device-token",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "notifications",
+                                                                               "device-token"
+                                                                           ]
+                                                              },
+                                                      "description":  "Deactivate the current device token for push notifications."
+                                                  },
+                                      "response":  [
+
+                                                   ]
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "Subscription",
+                     "item":  [
+                                  {
+                                      "name":  "Get Subscription Status",
+                                      "request":  {
+                                                      "auth":  {
+                                                                   "type":  "bearer",
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "value":  "{{auth_token}}",
+                                                                                      "type":  "string"
+                                                                                  }
+                                                                              ]
+                                                               },
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/api/subscription/status",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "subscription",
+                                                                               "status"
+                                                                           ]
+                                                              },
+                                                      "description":  "Check the current user subscription state and whether submissions are enabled."
+                                                  },
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "name":  "Verify Subscription",
+                                      "request":  {
+                                                      "auth":  {
+                                                                   "type":  "bearer",
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "value":  "{{auth_token}}",
+                                                                                      "type":  "string"
+                                                                                  }
+                                                                              ]
+                                                               },
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"provider\": \"manual\",\n  \"provider_product_id\": \"community_will_monthly\",\n  \"provider_transaction_id\": \"sub_{{$timestamp}}\",\n  \"plan_code\": \"monthly\",\n  \"receipt\": \"manual-postman-receipt\",\n  \"platform\": \"ios\",\n  \"ends_at\": \"2026-06-15T00:00:00Z\"\n}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               }
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/api/subscription/verify",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "subscription",
+                                                                               "verify"
+                                                                           ]
+                                                              },
+                                                      "description":  "Create or verify an active subscription entitlement."
+                                                  },
+                                      "response":  [
+
+                                                   ]
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "Submission",
+                     "item":  [
+                                  {
+                                      "name":  "Create Submission",
+                                      "request":  {
+                                                      "auth":  {
+                                                                   "type":  "bearer",
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "value":  "{{auth_token}}",
+                                                                                      "type":  "string"
+                                                                                  }
+                                                                              ]
+                                                               },
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "formdata",
+                                                                   "formdata":  [
+                                                                                    {
+                                                                                        "key":  "county_id",
+                                                                                        "value":  "{{feed_county_id}}",
+                                                                                        "type":  "text"
+                                                                                    },
+                                                                                    {
+                                                                                        "key":  "title",
+                                                                                        "value":  "Community update from Postman",
+                                                                                        "type":  "text"
+                                                                                    },
+                                                                                    {
+                                                                                        "key":  "location_label",
+                                                                                        "value":  "Butler County, Alabama",
+                                                                                        "type":  "text"
+                                                                                    },
+                                                                                    {
+                                                                                        "key":  "description",
+                                                                                        "value":  "This is a submission created from the Postman collection import.",
+                                                                                        "type":  "text"
+                                                                                    },
+                                                                                    {
+                                                                                        "key":  "media",
+                                                                                        "type":  "file",
+                                                                                        "src":  ""
+                                                                                    }
+                                                                                ]
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/api/submissions",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "submissions"
+                                                                           ]
+                                                              },
+                                                      "description":  "Submit subscriber content against feed_county_id. Run Get Feed Counties first so submissions target the same county as the feed and archive requests."
+                                                  },
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "name":  "My Submissions",
+                                      "request":  {
+                                                      "auth":  {
+                                                                   "type":  "bearer",
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "value":  "{{auth_token}}",
+                                                                                      "type":  "string"
+                                                                                  }
+                                                                              ]
+                                                               },
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/api/submissions/my?status=\u0026per_page=15",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "submissions",
+                                                                               "my"
+                                                                           ],
+                                                                  "query":  [
+                                                                                {
+                                                                                    "key":  "status",
+                                                                                    "value":  ""
+                                                                                },
+                                                                                {
+                                                                                    "key":  "per_page",
+                                                                                    "value":  "15"
+                                                                                }
+                                                                            ]
+                                                              },
+                                                      "description":  "Fetch the current user\u0027s submission history and moderation status."
+                                                  },
+                                      "response":  [
+
+                                                   ]
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "Profile",
+                     "item":  [
+                                  {
+                                      "name":  "Update Profile",
+                                      "request":  {
+                                                      "auth":  {
+                                                                   "type":  "bearer",
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "value":  "{{auth_token}}",
+                                                                                      "type":  "string"
+                                                                                  }
+                                                                              ]
+                                                               },
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{auth_token}}"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "formdata",
+                                                                   "formdata":  [
+                                                                                    {
+                                                                                        "key":  "_method",
+                                                                                        "value":  "PUT",
+                                                                                        "type":  "text"
+                                                                                    },
+                                                                                    {
+                                                                                        "key":  "name",
+                                                                                        "value":  "Butler Subscriber Updated",
+                                                                                        "type":  "text"
+                                                                                    },
+                                                                                    {
+                                                                                        "key":  "email",
+                                                                                        "value":  "{{seeded_email}}",
+                                                                                        "type":  "text"
+                                                                                    },
+                                                                                    {
+                                                                                        "key":  "phone",
+                                                                                        "value":  "+1-555-000-1000",
+                                                                                        "type":  "text"
+                                                                                    },
+                                                                                    {
+                                                                                        "key":  "remove_avatar",
+                                                                                        "value":  "0",
+                                                                                        "type":  "text"
+                                                                                    },
+                                                                                    {
+                                                                                        "key":  "avatar",
+                                                                                        "type":  "file",
+                                                                                        "src":  ""
+                                                                                    }
+                                                                                ]
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/api/profile",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "profile"
+                                                                           ]
+                                                              },
+                                                      "description":  "Update profile fields and optionally upload a profile image. This request is sent as multipart POST with `_method=PUT` for more reliable file upload handling in Postman. Pick a real local image file for `avatar`. Set `remove_avatar` to `true` if you want to clear the current image without uploading a replacement."
+                                                  },
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "name":  "Delete Profile",
+                                      "request":  {
+                                                      "auth":  {
+                                                                   "type":  "bearer",
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "value":  "{{auth_token}}",
+                                                                                      "type":  "string"
+                                                                                  }
+                                                                              ]
+                                                               },
+                                                      "method":  "DELETE",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"password\": \"{{seeded_password}}\"\n}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               }
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/api/profile",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "profile"
+                                                                           ]
+                                                              },
+                                                      "description":  "Soft delete the authenticated account and profile. This request requires the current account password."
+                                                  },
+                                      "response":  [
+
+                                                   ]
+                                  }
+                              ]
+                 }
+             ],
+    "event":  [
+
+              ],
+    "variable":  [
+                     {
+                         "key":  "base_url",
+                         "value":  "http://127.0.0.1:8000"
+                     },
+                     {
+                         "key":  "auth_token",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "seeded_email",
+                         "value":  "subscriber@gmail.com"
+                     },
+                     {
+                         "key":  "seeded_password",
+                         "value":  "password"
+                     },
+                     {
+                         "key":  "reset_email",
+                         "value":  "subscriber@gmail.com"
+                     },
+                     {
+                         "key":  "reset_token",
+                         "value":  "CHANGE_ME_RESET_TOKEN"
+                     },
+                     {
+                         "key":  "new_password",
+                         "value":  "Password1!"
+                     },
+                     {
+                         "key":  "device_name",
+                         "value":  "postman"
+                     },
+                     {
+                         "key":  "registration_email",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "country_id",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "region_id",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "county_id",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "location_latitude",
+                         "value":  "31.8296"
+                     },
+                     {
+                         "key":  "location_longitude",
+                         "value":  "-86.6178"
+                     },
+                     {
+                         "key":  "detected_location_label",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "feed_county_search",
+                         "value":  "Butler"
+                     },
+                     {
+                         "key":  "feed_county_name",
+                         "value":  "Butler County"
+                     },
+                     {
+                         "key":  "feed_county_id",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "preferred_category_slug",
+                         "value":  "community"
+                     },
+                     {
+                         "key":  "preferred_subcategory_slug",
+                         "value":  "local-updates"
+                     },
+                     {
+                         "key":  "category_id",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "category_slug",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "subcategory_id",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "subcategory_slug",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "post_id",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "archive_post_id",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "archive_date",
+                         "value":  "2026-05-05"
+                     },
+                     {
+                         "key":  "notification_id",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "notification_device_token",
+                         "value":  "postman-device-token-123"
+                     },
+                     {
+                         "key":  "last_feed_county_id",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "last_feed_county_name",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "last_feed_total",
+                         "value":  ""
+                     }
+                 ]
+}

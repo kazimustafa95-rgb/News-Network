@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\Notification\NotificationController;
 use App\Http\Controllers\Api\Profile\ProfileController;
 use App\Http\Controllers\Api\Submission\SubmissionController;
 use App\Http\Controllers\Api\Subscription\SubscriptionController;
+use App\Http\Controllers\Api\Taxonomy\TaxonomyController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('register')->group(function (): void {
@@ -28,6 +29,9 @@ Route::get('locations/countries', [LocationController::class, 'countries']);
 Route::get('locations/countries/{country}/regions', [LocationController::class, 'regions']);
 Route::get('locations/regions/{region}/counties', [LocationController::class, 'counties']);
 Route::post('locations/auto-detect', [LocationController::class, 'autoDetect']);
+
+Route::get('categories', [TaxonomyController::class, 'categories']);
+Route::get('categories/{category}/subcategories', [TaxonomyController::class, 'subcategories']);
 
 Route::get('feed', [FeedController::class, 'index']);
 Route::get('feed/counties', [FeedController::class, 'availableCounties']);

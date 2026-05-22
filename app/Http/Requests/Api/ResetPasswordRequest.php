@@ -18,6 +18,7 @@ class ResetPasswordRequest extends FormRequest
             'email' => ['required', 'email'],
             'token' => ['required', 'string'],
             'password' => ['required', 'confirmed', Password::defaults()],
+            'password_confirmation' => ['required'],
         ];
     }
 }
